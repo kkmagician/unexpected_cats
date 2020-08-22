@@ -91,7 +91,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let posts: Vec<TgMessage> = get_vk_posts(&client, owner, &vk_token, posts_count)
             .iter().rev()
             .filter_map(|post| {
-                if post.date > latest_post { post.to_message() } else { None }
+                if post.date > latest_post && post.is_pinned != Some(1) { post.to_message() } else { None }
             }).collect();
 
         println!("{} new posts in {} for {}", posts.len(), owner, chat);
