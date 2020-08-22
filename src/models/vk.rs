@@ -3,8 +3,8 @@ use crate::models::tg::TgMessage;
 
 #[derive(Deserialize, Debug)]
 pub struct WallPost {
+    pub date: i32,
     text: Option<String>,
-    date: i32,
     attachments: Option<Vec<Attachment>>
 }
 
