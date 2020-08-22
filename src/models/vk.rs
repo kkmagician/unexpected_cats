@@ -4,6 +4,7 @@ use crate::models::tg::TgMessage;
 #[derive(Deserialize, Debug)]
 pub struct WallPost {
     pub date: i32,
+    pub is_pinned: Option<u8>,
     text: Option<String>,
     attachments: Option<Vec<Attachment>>
 }
