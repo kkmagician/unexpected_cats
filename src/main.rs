@@ -132,6 +132,7 @@ fn get_vk_posts(client: &Client, group_id: &str, access_token: &str, posts_count
 
 fn parse_posts(json: &Value) -> Result<Option<Vec<WallPost>>, Error> {
     let items = json.get("response").and_then(|j| j.get("items"));
+
     items.map(|v| from_value::<Vec<WallPost>>(v.clone()))
         .map_or(Ok(None), |r| r.map(Some))
 }

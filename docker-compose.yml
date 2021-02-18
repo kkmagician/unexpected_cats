@@ -15,7 +15,7 @@ services:
       - ./build_target:/build/target
 
   release:
-    image: registry.gitlab.com/awfrke/unexpected_cats
+    image: kkmagician/unexpected_cats
     build:
       context: .
       dockerfile: release.Dockerfile
