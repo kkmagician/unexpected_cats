@@ -6,7 +6,7 @@ use std::io::Read;
 
 use redis::Commands;
 use reqwest::blocking::Client;
-use serde_json::{from_value, Value, Error};
+use serde_json::{from_value, Value};
 
 use crate::models::vk::WallPost;
 use crate::models::tg::TgMessage;
@@ -103,7 +103,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 Err(e) => {
                     println!("{:?}", e);
-                    break
                 }
             }
         }
@@ -126,13 +125,24 @@ fn get_vk_posts(client: &Client, group_id: &str, access_token: &str, posts_count
         .query(&params)
         .send().ok()
         .and_then(|resp| resp.json::<Value>().ok())
-        .and_then(|v| parse_posts(&v).ok().flatten())
+        .map(|v| parse_posts(&v))
         .unwrap_or(empty)
 }
 
-fn parse_posts(json: &Value) -> Result<Option<Vec<WallPost>>, Error> {
-    let items = json.get("response").and_then(|j| j.get("items"));
+fn parse_posts(json: &Value) -> Vec<WallPost> {
+    let items = json.get("response")
+        .and_then(|j| j.get("items"));
 
-    items.map(|v| from_value::<Vec<WallPost>>(v.clone()))
-        .map_or(Ok(None), |r| r.map(Some))
+    if items.is_some() {
+        match from_value::<Vec<WallPost>>(items.unwrap().clone()) {
+            Ok(posts) =>
+                posts.iter()
+                    .filter_map(|p| if p.is_ok_post() { Some(p) } else { None })
+                    .cloned()
+                    .collect(),
+            Err(_) => vec![]
+        }
+    } else {
+        vec![]
+    }
 }
