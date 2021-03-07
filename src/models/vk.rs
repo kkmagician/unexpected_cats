@@ -1,7 +1,7 @@
-use serde::{Deserialize};
+use serde::Deserialize;
 use crate::models::tg::TgMessage;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct WallPost {
     pub date: i32,
     pub is_pinned: Option<u8>,
@@ -9,19 +9,41 @@ pub struct WallPost {
     attachments: Option<Vec<Attachment>>
 }
 
-#[derive(Deserialize, Debug)]
+impl WallPost {
+    const MAX_TG_SIZE: usize = 1096;
+
+    fn is_text_size_ok(&self) -> bool {
+        let text_length = self.text.as_ref().map_or(0, |txt| txt.len());
+        text_length <= WallPost::MAX_TG_SIZE
+    }
+
+    fn has_attachments(&self) -> bool {
+        self.attachments.is_some()
+    }
+
+    fn has_no_links(&self) -> bool {
+        self.text.as_ref()
+            .map_or(true, |t| !(t.contains("http") || t.contains("vk.me")) )
+    }
+
+    pub fn is_ok_post(&self) -> bool {
+        self.has_no_links() && self.is_text_size_ok() && self.has_attachments()
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 struct Attachment {
     #[serde(rename="type")]
     typ: String,
     photo: Option<Photo>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 struct Photo {
     sizes: Vec<Size>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 struct Size {
     url: String
 }
